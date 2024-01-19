@@ -54,8 +54,13 @@ const resolvers = {
 
       return personsFromApi.filter(byPhone);
     },
-    findPerson: (root, args) => {
+    findPerson: async (root, args) => {
       const { name } = args;
+
+      const { data: personsFromApi } = await axios.get(
+        "http://localhost:3000/persons"
+      );
+
       return personsFromApi.find((person) => person.name === name);
     },
   },

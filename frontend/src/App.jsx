@@ -1,35 +1,27 @@
 import { useEffect, useState } from "react";
+import { gql, useQuery } from "@apollo/client";
+
+import { Persons } from "./Persons.jsx";
 import "./App.css";
 
+const ALL_PERSONS = gql`
+  query {
+    allPersons {
+      id
+      name
+      phone
+      address {
+        city
+        street
+      }
+    }
+  }
+`;
+
 function App() {
-  const [persons, SetPersons] = useState([]);
+  const { data, error, loading } = useQuery(ALL_PERSONS);
 
-  useEffect(() => {
-    fetch("http://localhost:4000", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        query: `
-        query {
-          allPersons {
-            name
-            id
-            phone
-            address {
-              city
-              street
-            }
-          }
-        }
-      `,
-      }),
-    })
-      .then((res) => res.json())
-      .then((res) => {
-        SetPersons(res.data.allPersons);
-      });
-  }, []);
-
+  if (error) return <span style="color: red">{error}</span>;
   return (
     <>
       <div>
@@ -37,12 +29,7 @@ function App() {
       </div>
 
       <ul>
-        {persons.map((person) => (
-          <li key={person.id}>
-            {person.name} - {person.phone ? person.phone : "No Phone"} -
-            {person.address.city} - {person.address.street}
-          </li>
-        ))}
+        {loading ? <p>Loading ... </p> : <Persons persons={data?.allPersons} />}
       </ul>
     </>
   );
