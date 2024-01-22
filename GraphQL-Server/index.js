@@ -4,6 +4,29 @@ import { v1 as uuid } from "uuid";
 
 import axios from "axios";
 
+const persons = [
+  {
+    name: "Joselito",
+    phone: "54-3541370188",
+    street: "cast 103",
+    city: "VCP",
+    id: "1",
+  },
+  {
+    name: "Messi",
+    phone: "54-3541345222",
+    street: "Miami 223",
+    city: "Miami",
+    id: "2",
+  },
+  {
+    name: "Tryndamere",
+    street: "Toplane",
+    city: "La grieta del invocador",
+    id: "3",
+  },
+];
+
 const typeDefs = gql`
   enum YesNo {
     YES
@@ -41,7 +64,12 @@ const typeDefs = gql`
 
 const resolvers = {
   Query: {
-    personCount: () => persons.length,
+    personCount: async () => {
+      const { data: personsFromApi } = await axios.get(
+        "http://localhost:3000/persons"
+      );
+      return personsFromApi.length;
+    },
     allPersons: async (root, args) => {
       const { data: personsFromApi } = await axios.get(
         "http://localhost:3000/persons"
@@ -65,27 +93,41 @@ const resolvers = {
     },
   },
   Mutation: {
-    addPerson: (root, args) => {
-      if (persons.find((p) => p.name === args.name)) {
+    addPerson: async (root, args) => {
+      const { name, phone, street, city } = args;
+
+      const { data: personsFromApi } = await axios.get(
+        "http://localhost:3000/persons"
+      );
+
+      if (personsFromApi.find((p) => p.name === name)) {
         throw new UserInputError("Name must be unique", {
           invalidArgs: args.name,
         });
       }
 
-      const person = { ...args, id: uuid() };
-      persons.push(person);
-      return person;
+      const newPerson = { name, phone, street, city, id: uuid() };
+      await axios.post("http://localhost:3000/persons", newPerson);
+
+      return newPerson;
     },
-    editPhone: (root, args) => {
-      const personIndex = persons.findIndex((p) => p.name === args.name);
+    editPhone: async (root, args) => {
+      const { name, phone } = args;
 
-      if (!personIndex === -1) return null;
+      const { data: personsFromApi } = await axios.get(
+        "http://localhost:3000/persons"
+      );
 
-      const person = persons[personIndex];
+      const person = personsFromApi.find((p) => p.name === name);
 
-      const updatedPerson = { ...person, phone: args.phone };
+      if (!person) return null;
 
-      persons[personIndex] = updatedPerson;
+      const updatedPerson = { ...person, phone };
+
+      await axios.put(
+        `http://localhost:3000/persons/${person.id}`,
+        updatedPerson
+      );
 
       return updatedPerson;
     },
