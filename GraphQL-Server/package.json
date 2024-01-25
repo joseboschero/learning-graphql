@@ -17,6 +17,10 @@
     "axios": "^1.6.5",
     "graphql": "^16.8.1",
     "json-server": "^1.0.0-alpha.21",
+    "jsonwebtoken": "^9.0.2",
+    "mongodb": "^6.3.0",
+    "mongoose": "7.6.8",
+    "mongoose-unique-validator": "4.0.0",
     "nodemon": "^3.0.3",
     "uuid": "^9.0.1"
   }
